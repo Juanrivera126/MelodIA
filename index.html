@@ -471,6 +471,14 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label for="audio-model-select" id="audio-model-label">6. 🎵 Modelo de audio</label>
+                <select id="audio-model-select">
+                    <option value="google/lyria-3-clip-preview">google/lyria-3-clip-preview</option>
+                    <option value="google/lyria-3.5">google/lyria-3.5</option>
+                </select>
+            </div>
+
             <div class="btn-group">
                 <button class="btn btn-generate" id="btnGenerate" onclick="startGeneration()" style="padding: 10px 14px; font-size: 0.95rem;">Generar Nueva</button>
                 <p id="songCounter" class="counter-msg" style="margin: 2px 0; padding: 4px; font-size: 0.8rem;">Canciones guardadas: 0</p>
@@ -493,6 +501,8 @@
                 </div>
             </main>
             <div class="song-editor">
+                <input id="uploadImageInput" type="file" accept="image/*" hidden onchange="handleImageUpload(event)">
+                <button class="btn btn-grid" id="btnUploadImage" onclick="document.getElementById('uploadImageInput').click()" disabled>Subir imagen</button>
                 <label for="generatedSongLyrics" id="lyricsLabel">Letra de la canción</label>
                 <textarea id="generatedSongLyrics" placeholder="La letra generada aparecerá aquí..."></textarea>
                 <button class="btn btn-generate" id="btnRegenerate" onclick="regenerateFromEditor()" disabled>Regenerar con esta letra</button>
@@ -506,7 +516,7 @@
     <script>
         const GENERATE_URL = "https://enter.pollinations.ai/api/generate/image/";
         const IMG_SIZE = 1024;
-        const MUSIC_MODEL = 'google/lyria-3-clip-preview';
+        const DEFAULT_AUDIO_MODEL = 'google/lyria-3-clip-preview';
         const VIDEO_BITRATE = 1000000;
         const AUDIO_BITRATE = 192000;
         const LYRICS_MODEL = 'openai/gpt-5.4-nano';
@@ -514,8 +524,8 @@
 
         const TRANSLATIONS = {
             es: {
-                language: '🌐 Idioma', keyRequired: '🔑 API Key de Pollinations AI (obligatoria)', subtitle: 'Tu cancionero inteligente: crea, guarda y comparte canciones con IA', validate: 'Validar', forget: 'Olvidar',
-                genre: '1. Género', voice: '2. Voz', description: '3. Descripción o tema', style: '4. Estilo visual', model: '5. 🖌️ Modelo AI',
+                language: '🌐 Idioma', keyRequired: '🔑 API Key de Pollinations AI (obligatoria)', subtitle: 'Tu cancionero inteligente: crea, guarda y comparte canciones con IA', uploadImage: 'Subir imagen', uploadError: 'No se pudo reemplazar la imagen.', validate: 'Validar', forget: 'Olvidar',
+                genre: '1. Género', voice: '2. Voz', description: '3. Descripción o tema', style: '4. Estilo visual', model: '5. 🖌️ Modelo AI', audioModel: '6. 🎵 Modelo de audio',
                 descriptionPlaceholder: 'Describe la historia, ambiente o tema de tu canción', generate: 'Generar Nueva', download: 'Descargar canción', grid: 'Descargar grilla',
                 lyrics: 'Letra de la canción', lyricsPlaceholder: 'La letra generada aparecerá aquí...', regenerate: 'Regenerar con esta letra', saved: 'Canciones guardadas',
                 male: 'Masculina', female: 'Femenina', custom: 'Personalizado', generatingCover: 'Generando portada...', generatingLyrics: 'Generando letra...',
@@ -523,8 +533,8 @@
                 customGenre: 'Escribe el género musical personalizado:', customGenreRequired: 'Debes indicar un género personalizado.', languageName: 'Spanish'
             },
             en: {
-                language: '🌐 Language', keyRequired: '🔑 Pollinations AI API key (required)', subtitle: 'Your intelligent songbook: create, save, and share songs with AI', validate: 'Validate', forget: 'Forget',
-                genre: '1. Genre', voice: '2. Voice', description: '3. Description or theme', style: '4. Visual style', model: '5. 🖌️ AI model',
+                language: '🌐 Language', keyRequired: '🔑 Pollinations AI API key (required)', subtitle: 'Your intelligent songbook: create, save, and share songs with AI', uploadImage: 'Upload image', uploadError: 'The image could not be replaced.', validate: 'Validate', forget: 'Forget',
+                genre: '1. Genre', voice: '2. Voice', description: '3. Description or theme', style: '4. Visual style', model: '5. 🖌️ AI model', audioModel: '6. 🎵 Audio model',
                 descriptionPlaceholder: 'Describe the story, mood, or theme of your song', generate: 'Generate New', download: 'Download song', grid: 'Download grid',
                 lyrics: 'Song lyrics', lyricsPlaceholder: 'The generated lyrics will appear here...', regenerate: 'Regenerate with these lyrics', saved: 'Saved songs',
                 male: 'Male', female: 'Female', custom: 'Custom', generatingCover: 'Generating cover...', generatingLyrics: 'Generating lyrics...',
@@ -613,6 +623,8 @@
             document.getElementById('descriptionInput').placeholder = t('descriptionPlaceholder');
             document.getElementById('styleLabel').textContent = t('style');
             document.getElementById('image-model-label').textContent = t('model');
+            document.getElementById('audio-model-label').textContent = t('audioModel');
+            document.getElementById('btnUploadImage').textContent = t('uploadImage');
             document.getElementById('btnGenerate').textContent = t('generate');
             document.getElementById('btnDownload').textContent = t('download');
             document.getElementById('btnGrid').textContent = t('grid');
@@ -911,7 +923,7 @@
             return lyrics;
         }
 
-        async function generateMusic(prompt) {
+        async function generateMusic(prompt, audioModel = DEFAULT_AUDIO_MODEL) {
             const apiKey = document.getElementById('api-key')?.value.trim() || getProviderKey(state.provider);
             if (!apiKey) throw new Error(`El proveedor ${PROVIDER_CONFIGS[state.provider].name} requiere API key para crear canciones.`);
 
@@ -931,7 +943,7 @@
                 method: 'POST',
                 headers,
                 body: JSON.stringify({
-                    model: MUSIC_MODEL,
+                    model: audioModel,
                     input: prompt,
                     response_format: 'mp3'
                 })
@@ -941,7 +953,7 @@
                     const fallback = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                         method: 'POST',
                         headers: { ...headers, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ model: MUSIC_MODEL, messages: [{ role: 'user', content: prompt }] })
+                         body: JSON.stringify({ model: audioModel, messages: [{ role: 'user', content: prompt }] })
                     });
                     if (fallback.ok) {
                         const payload = await fallback.json();
@@ -1040,12 +1052,14 @@
             const btnGenerate = document.getElementById('btnGenerate');
             const btnDownload = document.getElementById('btnDownload');
             const btnRegenerate = document.getElementById('btnRegenerate');
+            const btnUploadImage = document.getElementById('btnUploadImage');
 
             const selectedGenre = document.getElementById('genreSelect').value;
             const genre = selectedGenre === 'custom' ? state.customGenre : selectedGenre;
             const voice = document.getElementById('voiceSelect').value;
             const description = (textOverride ?? document.getElementById('descriptionInput').value).trim();
             const style = document.getElementById('styleSelect').value;
+            const audioModel = document.getElementById('audio-model-select').value || DEFAULT_AUDIO_MODEL;
             const model = document.getElementById('image-model-select')?.value || 'zimage';
             if (!description) {
                 alert(t('emptyDescription'));
@@ -1064,6 +1078,7 @@
             btnGenerate.disabled = true;
             btnDownload.disabled = true;
             btnRegenerate.disabled = true;
+            btnUploadImage.disabled = true;
 
             const seed = Math.floor(Math.random() * 1000000);
 
@@ -1079,11 +1094,11 @@
                     ? `${genre} song in English. ${voice} lead singer. Perform these lyrics with an expressive vocal, clear melody, memorable chorus, professional production, and a 30-second clip:\n\n${lyrics}`
                     : `Canción ${genre} en español. Voz principal ${voice}. Interpreta esta letra con voz expresiva, melodía clara, coro memorable, producción profesional y un clip de 30 segundos:\n\n${lyrics}`;
                 loadingOverlay.innerHTML = `<div class="spinner"></div><p>${t('generatingSong')}</p>`;
-                const audioBlob = await generateMusic(musicPrompt);
+                const audioBlob = await generateMusic(musicPrompt, audioModel);
                 loadingOverlay.innerHTML = `<div class="spinner"></div><p>${t('assembling')}</p>`;
                 const mp4Blob = await createMp4(base64Image, audioBlob);
                 const filename = `${slugify(description)}.mp4`;
-                generatedSongs.push({ image: base64Image, blob: mp4Blob, filename, description, lyrics, style, genre, language: state.language });
+                generatedSongs.push({ image: base64Image, blob: mp4Blob, audioBlob, filename, description, lyrics, style, genre, audioModel, language: state.language });
                 updateCounter();
             } catch (error) {
                 console.error("Error:", error);
@@ -1096,6 +1111,7 @@
                 btnGenerate.disabled = false;
                 btnDownload.disabled = false;
                 btnRegenerate.disabled = generatedSongs.length === 0;
+                btnUploadImage.disabled = generatedSongs.length === 0;
             }
         }
 
@@ -1108,6 +1124,41 @@
             }
             const description = document.getElementById('descriptionInput').value.trim();
             startGeneration(description || text, text);
+        }
+
+        async function handleImageUpload(event) {
+            const file = event.target.files?.[0];
+            const song = generatedSongs[generatedSongs.length - 1];
+            if (!file || !song) return;
+
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const imageDataUrl = reader.result;
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                const uploadButton = document.getElementById('btnUploadImage');
+                try {
+                    await dataUrlToImage(imageDataUrl);
+                    document.getElementById('mainImage').src = imageDataUrl;
+                    song.image = imageDataUrl;
+                    if (song.audioBlob) {
+                        loadingOverlay.style.display = 'flex';
+                        loadingOverlay.innerHTML = `<div class="spinner"></div><p>${t('assembling')}</p>`;
+                        song.blob = await createMp4(imageDataUrl, song.audioBlob);
+                    }
+                } catch (error) {
+                    console.error('Image replacement error:', error);
+                    alert(`${t('uploadError')} ${error.message}`);
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                    uploadButton.disabled = false;
+                    event.target.value = '';
+                }
+            };
+            reader.onerror = () => {
+                alert(t('uploadError'));
+                event.target.value = '';
+            };
+            reader.readAsDataURL(file);
         }
 
         function downloadSong() {
@@ -1125,9 +1176,11 @@
         function updateCounter() {
             const counter = document.getElementById('songCounter');
             const btnDelete = document.getElementById('btnDelete');
+            const btnUploadImage = document.getElementById('btnUploadImage');
             const count = generatedSongs.length;
             counter.innerText = `${t('saved')}: ${count}`;
             btnDelete.style.display = count > 0 ? 'flex' : 'none';
+            btnUploadImage.disabled = count === 0;
         }
 
         function deleteCurrentSong() {
@@ -1142,6 +1195,7 @@
             } else {
                 imgElement.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
                 songText.value = '';
+                document.getElementById('descriptionInput').value = '';
             }
             updateCounter();
         }

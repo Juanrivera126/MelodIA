@@ -11,6 +11,7 @@ MelodIA genera portadas cuadradas, letras y canciones a partir de un genero, una
 - Selector de idioma para generar la interfaz, la letra y la cancion en español o inglés.
 - Genero personalizado mediante un cuadro de dialogo.
 - Generacion musical con `google/lyria-3-clip-preview` mediante Pollinations AI.
+- Selector de modelo de audio entre `google/lyria-3-clip-preview` y `google/lyria-3.5`.
 - Generacion de letra antes del audio; la letra se incluye en el prompt enviado a Lyria.
 - Pollinations AI como proveedor unico.
 - Persistencia local de la API key de Pollinations AI.
@@ -20,6 +21,7 @@ MelodIA genera portadas cuadradas, letras y canciones a partir de un genero, una
 - Reproductor independiente por tarjeta, con un solo video activo a la vez.
 - Las grillas existentes no usan una portada compartida: cada video muestra su propio primer fotograma al cargarse.
 - Letra editable debajo de la portada para regenerar el MP4 con una version modificada.
+- Boton **Subir imagen** para reemplazar la portada generada y actualizar el MP4 actual.
 
 ## Archivos principales
 
@@ -36,11 +38,12 @@ MelodIA genera portadas cuadradas, letras y canciones a partir de un genero, una
 3. Selecciona el idioma, genero y voz.
 4. Escribe la descripcion o el tema de la cancion.
 5. Selecciona uno de los 15 estilos visuales.
-6. Pulsa **Generar Nueva** para crear la portada, la letra y el audio.
-7. Edita la letra debajo de la portada y pulsa **Regenerar con esta letra** para crear otra version.
-8. Pulsa **Descargar cancion** para guardar el MP4 actual.
-9. Pulsa **Descargar grilla** para generar un HTML con todas las canciones creadas.
-10. Abre el HTML descargado y usa **Play** en cualquier tarjeta.
+6. Selecciona el modelo de audio: `google/lyria-3-clip-preview` o `google/lyria-3.5`.
+7. Pulsa **Generar Nueva** para crear la portada, la letra y el audio.
+8. Edita la letra debajo de la portada y pulsa **Regenerar con esta letra** para crear otra version.
+9. Pulsa **Descargar cancion** para guardar el MP4 actual.
+10. Pulsa **Descargar grilla** para generar un HTML con todas las canciones creadas.
+11. Abre el HTML descargado y usa **Play** en cualquier tarjeta.
 
 ## Reproduccion y compatibilidad
 

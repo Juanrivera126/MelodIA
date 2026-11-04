@@ -11,6 +11,7 @@ MelodIA generates square album covers, lyrics, and songs from a genre, voice, an
 - Spanish and English language selection for the interface, lyrics, and song generation.
 - Custom music genre through a dialog box.
 - Music generation with `google/lyria-3-clip-preview` through Pollinations AI.
+- Audio model selector with `google/lyria-3-clip-preview` and `google/lyria-3.5` options.
 - Lyrics generation before audio generation; the lyrics are included in the prompt sent to Lyria.
 - Pollinations AI as the only provider.
 - Local persistence of the Pollinations AI API key.
@@ -18,6 +19,7 @@ MelodIA generates square album covers, lyrics, and songs from a genre, voice, an
 - HTML grid downloads with one card per generated song.
 - One cover and one independent player per grid card.
 - Editable lyrics below the cover for regenerating the MP4 with modified lyrics.
+- **Upload image** button to replace the generated cover and update the current MP4.
 - Existing grids do not use one shared cover image; each video uses its own first frame.
 
 ## Main Files
@@ -39,11 +41,12 @@ MelodIA generates square album covers, lyrics, and songs from a genre, voice, an
 4. Select a genre and voice. Choose **Custom** to enter a custom genre in a dialog box.
 5. Write the song description or theme.
 6. Select one of the fifteen visual styles.
-7. Click **Generate New** to create the cover, lyrics, and audio.
-8. Edit the lyrics below the cover and click **Regenerate with these lyrics** to create another version.
-9. Click **Download song** to save the current MP4.
-10. Click **Download grid** to generate an HTML file containing all generated songs.
-11. Open the downloaded HTML file and click **Play** on any card.
+7. Select the audio model: `google/lyria-3-clip-preview` or `google/lyria-3.5`.
+8. Click **Generate New** to create the cover, lyrics, and audio.
+9. Edit the lyrics below the cover and click **Regenerate with these lyrics** to create another version.
+10. Click **Download song** to save the current MP4.
+11. Click **Download grid** to generate an HTML file containing all generated songs.
+12. Open the downloaded HTML file and click **Play** on any card.
 
 ## Playback and Compatibility
 
