@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodIA - README</title>
+    <style>
+        :root { color-scheme: light; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #243447;
+            background: #eef2f5;
+        }
+        main {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 32px 40px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, .12);
+        }
+        h1, h2 { color: #2c3e50; }
+        h1 { margin-top: 0; }
+        code { padding: 2px 5px; background: #eef2f5; border-radius: 4px; }
+        li { margin: 6px 0; }
+        @media (max-width: 640px) {
+            main { margin: 0; padding: 24px 20px; border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>MelodIA</h1>
+    <p><strong>Tu cancionero inteligente: crea, guarda y comparte canciones con IA.</strong></p>
+    <p>MelodIA genera portadas cuadradas, letras y canciones a partir de un genero, una voz y una descripcion o tema. El resultado puede descargarse como una cancion individual o como una grilla HTML interactiva.</p>
+
+    <h2>Caracteristicas</h2>
+    <ul>
+        <li>Generacion de portadas cuadradas bajo demanda.</li>
+        <li>Selector de 15 estilos visuales, incluyendo vintage, cartoon 3D, anime, acuarela y cyberpunk.</li>
+        <li>Selector de idioma para la interfaz, la letra y la cancion en español o inglés.</li>
+        <li>Genero personalizado mediante un cuadro de dialogo.</li>
+        <li>Generacion musical con <code>google/lyria-3-clip-preview</code> mediante Pollinations AI.</li>
+        <li>Generacion de letra antes del audio; la letra se incluye en el prompt enviado a Lyria.</li>
+        <li>Pollinations AI como proveedor unico.</li>
+        <li>Persistencia local de la API key de Pollinations AI.</li>
+        <li>Descarga de canciones en formato MP4 cuando el navegador admite <code>MediaRecorder</code> con MP4.</li>
+        <li>Descarga de una grilla HTML con una tarjeta por cancion.</li>
+        <li>Portada individual y reproductor independiente por tarjeta.</li>
+        <li>Letra editable debajo de la portada para regenerar el MP4.</li>
+        <li>Las grillas existentes no usan una portada compartida: cada video muestra su propio primer fotograma al cargarse.</li>
+    </ul>
+
+    <h2>Archivos principales</h2>
+    <ul>
+        <li><code>index.html</code>: aplicacion para generar portadas, canciones y grillas.</li>
+        <li><code>grilla.html</code>: grilla HTML generada y lista para abrir.</li>
+        <li><code>ejemplo.html</code>: ejemplo de grilla de imagenes.</li>
+        <li><code>imagen.png</code>, <code>propiedades.png</code> y <code>gifanimadoRedProyecto.gif</code>: recursos visuales.</li>
+        <li><code>Bajo_la_luna_del_cafetal.mp4</code>: recurso multimedia de prueba.</li>
+    </ul>
+
+    <h2>Uso</h2>
+    <ol>
+        <li>Abre <code>index.html</code> en un navegador moderno.</li>
+        <li>Introduce y valida tu API key de Pollinations AI.</li>
+        <li>Selecciona idioma, genero, voz y uno de los 15 estilos visuales.</li>
+        <li>Escribe el tema y pulsa <strong>Generar Nueva</strong> para crear portada, letra y audio.</li>
+        <li>Edita la letra debajo de la portada y pulsa <strong>Regenerar con esta letra</strong>.</li>
+        <li>Usa <strong>Descargar cancion</strong> o <strong>Descargar grilla</strong>.</li>
+        <li>Abre la grilla descargada y pulsa <strong>Play</strong> en cualquier tarjeta.</li>
+    </ol>
+
+    <h2>Reproduccion y compatibilidad</h2>
+    <p>El boton <strong>Play</strong> reproduce la tarjeta seleccionada y detiene las demas. El audio no se silencia automaticamente. Si el navegador no puede reproducir un MP4 concreto, la grilla conserva el boton en <strong>Play</strong> y muestra un aviso.</p>
+    <p>Se recomienda Chrome o Edge actualizado. Si el navegador restringe recursos locales, sirve la carpeta con un servidor HTTP local.</p>
+
+    <h2>Solucion de problemas</h2>
+    <ul>
+        <li>Si todos los videos muestran la misma imagen, elimina cualquier <code>poster="imagen.png"</code> compartido de una grilla antigua.</li>
+        <li>Si Play no inicia, confirma que el MP4 sea valido y prueba con Chrome o Edge actualizado.</li>
+        <li>Si no se puede generar, revisa la API key de Pollinations AI y la conexion de red.</li>
+    </ul>
+
+    <h2>Creditos</h2>
+    <p>Disenado por <strong>Juan Guillermo Rivera Berrio</strong> con tecnologia Gemini 3 y asistencia de Antigravity.</p>
+</main>
+</body>
+</html>

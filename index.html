@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodIA</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Layout Principal */
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: clamp(15px, 2.5vw, 30px);
+            padding: 15px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            flex: 1;
+        }
+
+        /* --- Panel de Controles --- */
+        .controls-panel {
+            background: white;
+            padding: 16px 18px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        .controls-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        .controls-panel::-webkit-scrollbar-track {
+            background: #f1f3f5;
+            border-radius: 4px;
+        }
+        .controls-panel::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .controls-panel::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .controls-panel h1 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.84rem;
+            color: #444;
+        }
+
+        select, input[type="text"], input[type="password"] {
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #fff;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        /* Botones */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .btn {
+            border: none;
+            color: white;
+            padding: 9px 14px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14.5px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: transform 0.2s, background-color 0.3s;
+            font-weight: 600;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-generate {
+            background-color: #2c3e50;
+        }
+        .btn-generate:hover {
+            background-color: #34495e;
+        }
+
+        .btn-download {
+            background-color: #4CAF50;
+        }
+        .btn-download:hover {
+            background-color: #45a049;
+        }
+
+        .btn-grid {
+            background-color: #7b5ea7;
+        }
+        .btn-grid:hover {
+            background-color: #6a4d94;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* --- Área de Imagen --- */
+        .image-wrapper {
+            position: relative;
+            width: clamp(280px, 40vw, 360px);
+            aspect-ratio: 1 / 1;
+            max-height: 75vh;
+            background-color: #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-column {
+            width: clamp(280px, 40vw, 360px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .image-column .image-wrapper {
+            width: 100%;
+        }
+
+        .song-editor {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .song-editor label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .song-editor textarea {
+            width: 100%;
+            min-height: 72px;
+            resize: vertical;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font: inherit;
+            box-sizing: border-box;
+        }
+
+        .song-editor .btn {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(44, 62, 80, 0.9);
+            color: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border-left-color: #fff;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+        }
+
+        /* Contador y Botón Borrar */
+        .counter-msg {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+            margin: 5px 0;
+            font-weight: 600;
+            background: #f0f4f8;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .btn-delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: none;
+            z-index: 15;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: #ff5252;
+            transform: scale(1.1);
+        }
+
+        /* Gestión de API Key (BYOP) */
+        .api-key-container {
+            border: 1px dashed #2c3e50;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8fbff;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .api-key-container label {
+            font-size: 0.8rem;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .api-key-inputs {
+            display: flex;
+            gap: 8px;
+        }
+
+        #apiKeyInput {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.85rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .btn-auth {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .btn-auth:hover {
+            background-color: #1a252f;
+        }
+
+        .api-key-status {
+            font-size: 0.75rem;
+            color: #27ae60;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* Footer */
+        .app-footer {
+            text-align: center;
+            padding: 18px 20px;
+            font-size: 0.82rem;
+            color: rgba(44, 62, 80, 0.55);
+            letter-spacing: 0.3px;
+        }
+
+        .app-subtitle {
+            margin: -4px 0 8px;
+            color: #64748b;
+            font-size: 0.82rem;
+            text-align: center;
+            line-height: 1.35;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .controls-panel {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <!-- Panel de Configuración -->
+        <aside class="controls-panel">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px; width: 100%;">
+                <img src="gifanimadoRedProyecto.gif" alt="Logo" style="height: 40px; width: auto; max-width: 120px; object-fit: contain; display: block;">
+                <h1 id="appTitle" style="margin: 0; font-size: 1.35rem; color: #2c3e50; white-space: nowrap;">MelodIA</h1>
+            </div>
+            <p id="appSubtitle" class="app-subtitle">Tu cancionero inteligente: crea, guarda y comparte canciones con IA</p>
+
+            <div class="form-group">
+                <label for="languageSelect" id="languageLabel">🌐 Idioma</label>
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="es" selected>Español</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="provider-key-field">
+                <label for="api-key" id="key-label">🔑 API Key de Pollinations AI (obligatoria)</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="password" id="api-key" placeholder="plln_sk_..." style="flex: 1;" oninput="saveCurrentKey()">
+                    <button type="button" id="validate-key-btn" class="btn-auth" onclick="validateProviderKey()" style="padding: 8px 12px; font-size: 0.85rem; white-space: nowrap;">Validar</button>
+                    <button type="button" id="clear-key-btn" class="btn-auth" onclick="clearProviderKey()" style="padding: 8px 12px; font-size: 0.85rem; background: #c0392b; white-space: nowrap;">Olvidar</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="genreSelect" id="genreLabel">1. Género</label>
+                <select id="genreSelect" onchange="handleGenreChange(this.value)">
+                    <option>Pop</option>
+                    <option>Hipo hop</option>
+                    <option>Rock</option>
+                    <option>Latina</option>
+                    <option>Electrónica</option>
+                    <option>Balada</option>
+                    <option>Jazz</option>
+                    <option>Ranchera</option>
+                    <option>Música clásica</option>
+                    <option>Tango</option>
+                    <option>Cumbia</option>
+                    <option>Salsa</option>
+                    <option>Carrilera</option>
+                    <option value="custom">Personalizado</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="voiceSelect" id="voiceLabel">2. Voz</label>
+                <select id="voiceSelect">
+                    <option value="masculina">Masculina</option>
+                    <option value="femenina">Femenina</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="descriptionInput" id="descriptionLabel">3. Descripción o tema</label>
+                <textarea id="descriptionInput" rows="4" required placeholder="Describe la historia, ambiente o tema de tu canción"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="styleSelect" id="styleLabel">4. Estilo visual</label>
+                <select id="styleSelect">
+                    <option value="vintage">Vintage</option>
+                    <option value="cartoon 3D">Cartoon 3D</option>
+                    <option value="anime">Anime</option>
+                    <option value="acuarela">Acuarela</option>
+                    <option value="pintura al óleo">Pintura al óleo</option>
+                    <option value="cómic retro">Cómic retro</option>
+                    <option value="arte pop">Arte pop</option>
+                    <option value="pixel art">Pixel art</option>
+                    <option value="surrealista">Surrealista</option>
+                    <option value="minimalista">Minimalista</option>
+                    <option value="fotografía cinematográfica">Fotografía cinematográfica</option>
+                    <option value="ilustración editorial">Ilustración editorial</option>
+                    <option value="fantasía épica">Fantasía épica</option>
+                    <option value="cyberpunk">Cyberpunk</option>
+                    <option value="arte renacentista">Arte renacentista</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="image-model-field">
+                <label for="image-model-select" id="image-model-label">5. 🖌️ Modelo AI</label>
+                <select id="image-model-select">
+                </select>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-generate" id="btnGenerate" onclick="startGeneration()" style="padding: 10px 14px; font-size: 0.95rem;">Generar Nueva</button>
+                <p id="songCounter" class="counter-msg" style="margin: 2px 0; padding: 4px; font-size: 0.8rem;">Canciones guardadas: 0</p>
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    <button class="btn btn-download" id="btnDownload" onclick="downloadSong()" style="flex: 1; padding: 9px 6px; font-size: 0.82rem;">Descargar canción</button>
+                    <button class="btn btn-grid" id="btnGrid" onclick="downloadGrid()" style="flex: 1; padding: 9px 6px; font-size: 0.82rem;">Descargar grilla</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Visualización y texto editable -->
+        <section class="image-column">
+            <main class="image-wrapper" style="aspect-ratio: 1 / 1;">
+                <button class="btn-delete" id="btnDelete" onclick="deleteCurrentSong()" title="Eliminar canción">&times;</button>
+                <img id="mainImage" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Generando...">
+                
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner"></div>
+                    <p>Creando tu canción...</p>
+                </div>
+            </main>
+            <div class="song-editor">
+                <label for="generatedSongLyrics" id="lyricsLabel">Letra de la canción</label>
+                <textarea id="generatedSongLyrics" placeholder="La letra generada aparecerá aquí..."></textarea>
+                <button class="btn btn-generate" id="btnRegenerate" onclick="regenerateFromEditor()" disabled>Regenerar con esta letra</button>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="app-footer">Diseñado por Juan Guillermo Rivera Berrío con tecnología Gemini 3 y asistencia Antigravity</footer>
+
+    <script>
+        const GENERATE_URL = "https://enter.pollinations.ai/api/generate/image/";
+        const IMG_SIZE = 1024;
+        const MUSIC_MODEL = 'google/lyria-3-clip-preview';
+        const VIDEO_BITRATE = 1000000;
+        const AUDIO_BITRATE = 192000;
+        const LYRICS_MODEL = 'openai/gpt-5.4-nano';
+        const generatedSongs = [];
+
+        const TRANSLATIONS = {
+            es: {
+                language: '🌐 Idioma', keyRequired: '🔑 API Key de Pollinations AI (obligatoria)', subtitle: 'Tu cancionero inteligente: crea, guarda y comparte canciones con IA', validate: 'Validar', forget: 'Olvidar',
+                genre: '1. Género', voice: '2. Voz', description: '3. Descripción o tema', style: '4. Estilo visual', model: '5. 🖌️ Modelo AI',
+                descriptionPlaceholder: 'Describe la historia, ambiente o tema de tu canción', generate: 'Generar Nueva', download: 'Descargar canción', grid: 'Descargar grilla',
+                lyrics: 'Letra de la canción', lyricsPlaceholder: 'La letra generada aparecerá aquí...', regenerate: 'Regenerar con esta letra', saved: 'Canciones guardadas',
+                male: 'Masculina', female: 'Femenina', custom: 'Personalizado', generatingCover: 'Generando portada...', generatingLyrics: 'Generando letra...',
+                generatingSong: 'Generando canción con Lyria...', assembling: 'Ensamblando MP4...', writeLyrics: 'Escribe una letra antes de regenerar.', emptyDescription: 'Escribe una descripción o tema antes de generar.',
+                customGenre: 'Escribe el género musical personalizado:', customGenreRequired: 'Debes indicar un género personalizado.', languageName: 'Spanish'
+            },
+            en: {
+                language: '🌐 Language', keyRequired: '🔑 Pollinations AI API key (required)', subtitle: 'Your intelligent songbook: create, save, and share songs with AI', validate: 'Validate', forget: 'Forget',
+                genre: '1. Genre', voice: '2. Voice', description: '3. Description or theme', style: '4. Visual style', model: '5. 🖌️ AI model',
+                descriptionPlaceholder: 'Describe the story, mood, or theme of your song', generate: 'Generate New', download: 'Download song', grid: 'Download grid',
+                lyrics: 'Song lyrics', lyricsPlaceholder: 'The generated lyrics will appear here...', regenerate: 'Regenerate with these lyrics', saved: 'Saved songs',
+                male: 'Male', female: 'Female', custom: 'Custom', generatingCover: 'Generating cover...', generatingLyrics: 'Generating lyrics...',
+                generatingSong: 'Generating song with Lyria...', assembling: 'Assembling MP4...', writeLyrics: 'Write lyrics before regenerating.', emptyDescription: 'Write a description or theme before generating.',
+                customGenre: 'Enter the custom music genre:', customGenreRequired: 'You must enter a custom genre.', languageName: 'English'
+            }
+        };
+
+        const LANGUAGE_OPTIONS = {
+            es: {
+                genres: ['Pop', 'Hip hop', 'Rock', 'Latina', 'Electrónica', 'Balada', 'Jazz', 'Ranchera', 'Música clásica', 'Tango', 'Cumbia', 'Salsa', 'Carrilera'],
+                styles: ['Vintage', 'Cartoon 3D', 'Anime', 'Acuarela', 'Pintura al óleo', 'Cómic retro', 'Arte pop', 'Pixel art', 'Surrealista', 'Minimalista', 'Fotografía cinematográfica', 'Ilustración editorial', 'Fantasía épica', 'Cyberpunk', 'Arte renacentista']
+            },
+            en: {
+                genres: ['Pop', 'Hip hop', 'Rock', 'Latin', 'Electronic', 'Ballad', 'Jazz', 'Ranchera', 'Classical', 'Tango', 'Cumbia', 'Salsa', 'Carrilera'],
+                styles: ['Vintage', '3D cartoon', 'Anime', 'Watercolor', 'Oil painting', 'Retro comic', 'Pop art', 'Pixel art', 'Surreal', 'Minimalist', 'Cinematic photography', 'Editorial illustration', 'Epic fantasy', 'Cyberpunk', 'Renaissance art']
+            }
+        };
+
+        const PROVIDER_CONFIGS = {
+            pollinations: { name: 'Pollinations AI', placeholder: 'sk_...', keyUrl: 'https://enter.pollinations.ai/authorize' },
+            openrouter: { name: 'OpenRouter', placeholder: 'sk-or-...', keyUrl: 'https://openrouter.ai/keys' }
+        };
+
+        const PROVIDER_VALIDATION_URLS = {
+            pollinations: 'https://gen.pollinations.ai/account/key',
+            openrouter: 'https://openrouter.ai/api/v1/key'
+        };
+
+        const MODEL_CATALOGS = {
+            pollinations: {
+                imageLabel: 'Modelo de imagen · Pollinations',
+                defaultImage: 'zimage',
+                images: [
+                    { value: 'zimage', label: 'zimage (Rápido / Muy permisivo)' },
+                    { value: 'krea/krea-2-medium', label: 'krea/krea-2-medium (Artístico)' },
+                    { value: 'black-forest-labs/flux.2-pro', label: 'flux.2-pro (Alta fidelidad)' },
+                    { value: 'x-ai/grok-imagine-image', label: 'grok-imagine-image (Grok)' },
+                    { value: 'ideogram-ai/ideogram-v4-turbo', label: 'ideogram-v4-turbo' },
+                    { value: 'alibaba/wan-2.7-image-pro', label: 'wan-2.7-image-pro' },
+                    { value: 'openai/gpt-image-2.5-flare', label: 'gpt-image-2.5-flare (OpenAI)' },
+                    { value: 'openai/gpt-image-2.5-sunburst', label: 'gpt-image-2.5-sunburst (OpenAI)' },
+                    { value: 'klein', label: 'klein (Realista)' },
+                    { value: 'gptimage', label: 'gptimage (Creativo)' }
+                ]
+            },
+            openrouter: {
+                imageLabel: 'Modelo de imagen · OpenRouter',
+                defaultImage: 'google/gemini-2.5-flash-image',
+                images: [
+                    { value: 'google/gemini-2.5-flash-image', label: 'Gemini 2.5 Flash Image', pureImage: false },
+                    { value: 'openai/gpt-5-image-mini', label: 'GPT Image mini', pureImage: false },
+                    { value: 'google/gemini-3.1-flash-image-preview', label: 'Gemini 3.1 Flash Image', pureImage: false },
+                    { value: 'openai/gpt-5.4-image-2', label: 'GPT Image 2', pureImage: false },
+                    { value: 'black-forest-labs/flux.2-klein-4b', label: 'Klein', pureImage: true },
+                    { value: 'microsoft/mai-image-2.5', label: 'MAI Image 2.5', pureImage: true },
+                    { value: 'x-ai/grok-imagine-image-quality', label: 'Grok xAI', pureImage: true },
+                    { value: 'recraft/recraft-v4.1-vector', label: 'Recraft V4.1', pureImage: true },
+                    { value: 'bytedance-seed/seedream-4.5', label: 'Seedream 4.5', pureImage: true },
+                    { value: 'black-forest-labs/flux.2-flex', label: 'Flux.2 Flex', pureImage: true }
+                ]
+            }
+        };
+
+        let state = {
+            provider: 'pollinations',
+            language: localStorage.getItem('interface_language') === 'en' ? 'en' : 'es',
+            customGenre: ''
+        };
+
+        const t = key => TRANSLATIONS[state.language][key] || TRANSLATIONS.es[key] || key;
+
+        function changeLanguage(language) {
+            state.language = language === 'en' ? 'en' : 'es';
+            localStorage.setItem('interface_language', state.language);
+            document.documentElement.lang = state.language;
+            document.getElementById('languageSelect').value = state.language;
+            document.getElementById('languageLabel').textContent = t('language');
+            document.getElementById('key-label').textContent = t('keyRequired');
+            document.getElementById('appSubtitle').textContent = t('subtitle');
+            document.getElementById('validate-key-btn').textContent = t('validate');
+            document.getElementById('clear-key-btn').textContent = t('forget');
+            document.getElementById('genreLabel').textContent = t('genre');
+            document.getElementById('voiceLabel').textContent = t('voice');
+            document.getElementById('descriptionLabel').textContent = t('description');
+            document.getElementById('descriptionInput').placeholder = t('descriptionPlaceholder');
+            document.getElementById('styleLabel').textContent = t('style');
+            document.getElementById('image-model-label').textContent = t('model');
+            document.getElementById('btnGenerate').textContent = t('generate');
+            document.getElementById('btnDownload').textContent = t('download');
+            document.getElementById('btnGrid').textContent = t('grid');
+            document.getElementById('lyricsLabel').textContent = t('lyrics');
+            document.getElementById('generatedSongLyrics').placeholder = t('lyricsPlaceholder');
+            document.getElementById('btnRegenerate').textContent = t('regenerate');
+            populateLanguageOptions();
+            updateCounter();
+        }
+
+        function populateLanguageOptions() {
+            const options = LANGUAGE_OPTIONS[state.language];
+            const genreSelect = document.getElementById('genreSelect');
+            const selectedGenre = genreSelect.value;
+            genreSelect.innerHTML = options.genres.map(genre => `<option value="${genre}">${genre}</option>`).join('') + `<option value="custom">${t('custom')}</option>`;
+            genreSelect.value = options.genres.includes(selectedGenre) || selectedGenre === 'custom' ? selectedGenre : options.genres[0];
+            const styleSelect = document.getElementById('styleSelect');
+            const selectedStyle = styleSelect.selectedIndex;
+            styleSelect.innerHTML = options.styles.map(style => `<option value="${style}">${style}</option>`).join('');
+            styleSelect.selectedIndex = Math.max(0, Math.min(selectedStyle, options.styles.length - 1));
+            document.getElementById('voiceSelect').options[0].textContent = t('male');
+            document.getElementById('voiceSelect').options[1].textContent = t('female');
+            document.getElementById('voiceSelect').options[0].value = state.language === 'en' ? 'male' : 'masculina';
+            document.getElementById('voiceSelect').options[1].value = state.language === 'en' ? 'female' : 'femenina';
+        }
+
+        function handleGenreChange(value) {
+            if (value !== 'custom') return;
+            const custom = window.prompt(t('customGenre'), state.customGenre);
+            if (custom && custom.trim()) {
+                state.customGenre = custom.trim();
+                document.getElementById('genreSelect').options[document.getElementById('genreSelect').selectedIndex].textContent = state.customGenre;
+            } else {
+                document.getElementById('genreSelect').value = state.customGenre || document.getElementById('genreSelect').options[0].value;
+                if (!custom) alert(t('customGenreRequired'));
+            }
+        }
+
+        const keyStorageName = (provider) => `${provider}_api_key`;
+
+        function getProviderKey(provider = state.provider) {
+            return localStorage.getItem(keyStorageName(provider)) || '';
+        }
+
+        function setProviderKey(provider = state.provider, key) {
+            if (key) {
+                localStorage.setItem(keyStorageName(provider), key);
+            } else {
+                localStorage.removeItem(keyStorageName(provider));
+            }
+        }
+
+        function saveCurrentKey() {
+                let key = document.getElementById('api-key').value.trim();
+            setProviderKey(state.provider, key);
+        }
+
+        function updateProviderKeyField() {
+            const keyField = document.getElementById('provider-key-field');
+            const keyInput = document.getElementById('api-key');
+            const keyLabel = document.getElementById('key-label');
+            const validateBtn = document.getElementById('validate-key-btn');
+            const clearBtn = document.getElementById('clear-key-btn');
+            const provider = PROVIDER_CONFIGS[state.provider];
+            if (!provider) return;
+
+            const required = true;
+            if (keyField) keyField.classList.toggle('hidden', !required);
+            if (keyInput) {
+                keyInput.required = required;
+                keyInput.value = required ? getProviderKey(state.provider) : '';
+                keyInput.placeholder = provider.placeholder || 'API Key...';
+            }
+            if (keyLabel) {
+                keyLabel.textContent = `🔑 API Key de ${provider.name} ${required ? '(obligatoria)' : '(opcional)'}`;
+            }
+            if (validateBtn) validateBtn.classList.toggle('hidden', !required);
+            if (clearBtn) clearBtn.classList.toggle('hidden', !required);
+        }
+
+        function populateProviderModels(provider = state.provider) {
+            const catalog = MODEL_CATALOGS[provider] || MODEL_CATALOGS.pollinations;
+            const select = document.getElementById('image-model-select');
+            const label = document.getElementById('image-model-label');
+            if (!select) return;
+
+            select.innerHTML = '';
+            catalog.images.forEach(model => {
+                const opt = document.createElement('option');
+                opt.value = model.value;
+                opt.textContent = model.label;
+                select.appendChild(opt);
+            });
+            select.value = catalog.defaultImage || catalog.images[0].value;
+            if (label) label.textContent = `5. 🖌️ ${catalog.imageLabel}`;
+        }
+
+        async function validateProviderKey() {
+            const provider = state.provider;
+            const key = document.getElementById('api-key').value.trim();
+
+            if (!key) {
+                alert(`Por favor, introduce la API key de ${PROVIDER_CONFIGS[provider].name}.`);
+                document.getElementById('api-key').focus();
+                return;
+            }
+
+            const button = document.getElementById('validate-key-btn');
+            button.disabled = true;
+            const orig = button.textContent;
+            button.textContent = 'Validando...';
+
+            try {
+                // Limpiar posibles espacios, comillas o prefijo Bearer
+                let cleanKey = key.trim();
+                if (cleanKey.toLowerCase().startsWith('bearer ')) cleanKey = cleanKey.slice(7).trim();
+                cleanKey = cleanKey.replace(/^["']|["']$/g, '').trim();
+                if (cleanKey !== key) {
+                    key = cleanKey;
+                    if (document.getElementById('apiKeyInput')) document.getElementById('apiKeyInput').value = key;
+                }
+
+                let url, headers = { 'Authorization': `Bearer ${key}` };
+                if (provider === 'pollinations') {
+                    // Endpoint oficial de Pollinations para validar API Keys
+                    url = 'https://gen.pollinations.ai/account/key';
+                } else {
+                    // OpenRouter
+                    url = 'https://openrouter.ai/api/v1/key';
+                    headers['HTTP-Referer'] = location.origin || 'http://localhost';
+                    headers['X-Title'] = 'Herramienta Educativa';
+                }
+
+                const response = await fetch(url, { headers });
+                if (!response.ok) {
+                    if (provider === 'openrouter' && response.status === 401) {
+                        if (!key.startsWith('sk-or-')) {
+                            throw new Error('La clave introducida no corresponde a OpenRouter (las claves de OpenRouter comienzan por "sk-or-v1-"). Si estás usando una clave de Pollinations ("plln_sk_..."), selecciona el proveedor Pollinations.');
+                        }
+                        throw new Error('La clave de OpenRouter no es válida o ha caducado. Obtén una clave en https://openrouter.ai/keys.');
+                    }
+                    if (provider === 'pollinations' && response.status === 401) {
+                        throw new Error('La clave de Pollinations no es válida. Obtén una clave en https://enter.pollinations.ai/keys.');
+                    }
+                    const errText = await response.text().catch(() => '');
+                    throw new Error(`HTTP ${response.status}${errText ? ': ' + errText.slice(0, 100) : ''}`);
+                }
+                setProviderKey(provider, key);
+                alert(`✓ API key de ${PROVIDER_CONFIGS[provider].name} válida.`);
+            } catch (error) {
+                alert(`✗ No se pudo validar la API key: ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = orig;
+            }
+        }
+
+        function clearProviderKey() {
+            const provider = state.provider;
+            localStorage.removeItem(keyStorageName(provider));
+            const input = document.getElementById('api-key');
+            if (input) input.value = '';
+            alert(`API key de ${PROVIDER_CONFIGS[provider].name} eliminada de la memoria caché.`);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const hashParams = new URLSearchParams(window.location.hash.slice(1));
+            const apiKeyFromHash = hashParams.get('api_key');
+            if (apiKeyFromHash) {
+                setProviderKey('pollinations', apiKeyFromHash);
+                window.history.replaceState(null, null, window.location.pathname + window.location.search);
+                alert('¡API Key vinculada con éxito!');
+            }
+
+            state.provider = 'pollinations';
+            updateProviderKeyField();
+            populateProviderModels('pollinations');
+            changeLanguage(state.language);
+
+        });
+
+        // Generar imagen con Pollinations
+        const generateImageFromPollinations = async (prompt, seed, model) => {
+            const apiKey = document.getElementById('api-key')?.value.trim() || getProviderKey('pollinations');
+            const selectedModel = model || document.getElementById('image-model-select')?.value || 'zimage';
+            let url = apiKey
+                ? `${GENERATE_URL}${encodeURIComponent(prompt)}?key=${apiKey}&model=${encodeURIComponent(selectedModel)}&seed=${seed}&width=${IMG_SIZE}&height=${IMG_SIZE}&nologo=true`
+                : `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${encodeURIComponent(selectedModel)}&seed=${seed}&width=${IMG_SIZE}&height=${IMG_SIZE}&nologo=true`;
+            let response = await fetch(url);
+            if (!response.ok && apiKey && response.status === 401) {
+                url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${encodeURIComponent(selectedModel)}&seed=${seed}&width=${IMG_SIZE}&height=${IMG_SIZE}&nologo=true`;
+                response = await fetch(url);
+            }
+            if (!response.ok) throw new Error(`Error de Pollinations: ${response.status}`);
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        };
+
+        // Generar imagen con OpenRouter
+        const generateImageFromOpenRouter = async (prompt, seed, model) => {
+            const apiKey = document.getElementById('api-key')?.value.trim() || getProviderKey('openrouter');
+            if (!apiKey) throw new Error('OpenRouter requiere API key para generar imágenes');
+
+            const selectedModel = model || document.getElementById('image-model-select')?.value || 'google/gemini-2.5-flash-image';
+            const imageModels = MODEL_CATALOGS.openrouter.images;
+            const config = imageModels.find(item => item.value === selectedModel);
+            const enhancedPrompt = `${prompt}. High quality, architectural technical blueprint drawing, clean composition, 8k.`;
+
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                    'HTTP-Referer': location.origin || 'http://localhost',
+                    'X-Title': 'MelodIA'
+                },
+                body: JSON.stringify({
+                    model: selectedModel,
+                    modalities: config?.pureImage ? ['image'] : ['image', 'text'],
+                    messages: [{ role: 'user', content: enhancedPrompt }],
+                    ...(!config?.pureImage ? { image_config: { aspect_ratio: '1:1' } } : {})
+                })
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                if (response.status === 402) {
+                    throw new Error('OpenRouter requiere al menos $1.00 USD de saldo en tu cuenta para generar imágenes (Error 402: Payment Required).');
+                }
+                throw new Error(`OpenRouter error (${response.status}): ${errText.slice(0, 100)}`);
+            }
+            const payload = await response.json();
+            const message = payload.choices?.[0]?.message;
+            const image = message?.images?.[0]?.image_url?.url || 
+                          message?.images?.[0]?.imageUrl?.url ||
+                          (Array.isArray(message?.content) ? message.content.find(part => part.type === 'image_url')?.image_url?.url : null);
+            if (!image) throw new Error('OpenRouter no devolvió una imagen');
+            if (image.startsWith('data:')) return image;
+
+            const imgRes = await fetch(image);
+            if (!imgRes.ok) throw new Error('No se pudo descargar imagen de OpenRouter');
+            const blob = await imgRes.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        };
+
+        // Función unificada
+        const generateImage = async (prompt, seed) => {
+            const model = document.getElementById('image-model-select')?.value;
+            if (state.provider === 'openrouter') {
+                return await generateImageFromOpenRouter(prompt, seed, model);
+            } else {
+                return await generateImageFromPollinations(prompt, seed, model);
+            }
+        };
+
+        const blobToDataUrl = blob => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+
+        async function generateLyrics(description, genre, voice) {
+            const apiKey = document.getElementById('api-key')?.value.trim() || getProviderKey(state.provider);
+            if (!apiKey) throw new Error(`El proveedor ${PROVIDER_CONFIGS[state.provider].name} requiere API key para generar la letra.`);
+            const endpoint = state.provider === 'pollinations'
+                ? 'https://gen.pollinations.ai/v1/chat/completions'
+                : 'https://openrouter.ai/api/v1/chat/completions';
+            const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+            if (state.provider === 'openrouter') {
+                headers['HTTP-Referer'] = location.origin || 'http://localhost';
+                headers['X-Title'] = 'MelodIA';
+            }
+            const prompt = state.language === 'en'
+                ? `Write original song lyrics in English for a ${genre} song about ${description}. The lead singer is ${voice}. Return only the lyrics, with verses and chorus, no title, no commentary, and keep them suitable for a 30-second song.`
+                : `Escribe una letra original en español para una canción ${genre} sobre ${description}. La voz principal es ${voice}. Devuelve solo la letra, con versos y coro, sin título ni comentarios, y que sea adecuada para una canción de 30 segundos.`;
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ model: LYRICS_MODEL, messages: [{ role: 'user', content: prompt }], temperature: 0.9 })
+            });
+            if (!response.ok) throw new Error(`No se pudo generar la letra (${response.status}).`);
+            const payload = await response.json();
+            const lyrics = payload.choices?.[0]?.message?.content?.trim();
+            if (!lyrics) throw new Error('El proveedor no devolvió una letra.');
+            return lyrics;
+        }
+
+        async function generateMusic(prompt) {
+            const apiKey = document.getElementById('api-key')?.value.trim() || getProviderKey(state.provider);
+            if (!apiKey) throw new Error(`El proveedor ${PROVIDER_CONFIGS[state.provider].name} requiere API key para crear canciones.`);
+
+            const endpoint = state.provider === 'pollinations'
+                ? 'https://gen.pollinations.ai/v1/audio/speech'
+                : 'https://openrouter.ai/api/v1/audio/speech';
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            };
+            if (state.provider === 'openrouter') {
+                headers['HTTP-Referer'] = location.origin || 'http://localhost';
+                headers['X-Title'] = 'MelodIA';
+            }
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    model: MUSIC_MODEL,
+                    input: prompt,
+                    response_format: 'mp3'
+                })
+            });
+            if (!response.ok) {
+                if (state.provider === 'openrouter') {
+                    const fallback = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { ...headers, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: MUSIC_MODEL, messages: [{ role: 'user', content: prompt }] })
+                    });
+                    if (fallback.ok) {
+                        const payload = await fallback.json();
+                        const text = payload.choices?.[0]?.message?.content || '';
+                        const audioUrl = text.match(/https?:\/\/[^\s)]+\.(?:mp3|wav|m4a|aac)/i)?.[0];
+                        if (audioUrl) {
+                            const audioResponse = await fetch(audioUrl);
+                            if (audioResponse.ok) return await audioResponse.blob();
+                        }
+                    }
+                }
+                const detail = await response.text().catch(() => '');
+                throw new Error(`No se pudo generar la canción (${response.status}). ${detail.slice(0, 160)}`);
+            }
+            return await response.blob();
+        }
+
+        function dataUrlToImage(dataUrl) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.onload = () => resolve(image);
+                image.onerror = () => reject(new Error('La imagen generada no pudo cargarse.'));
+                image.src = dataUrl;
+            });
+        }
+
+        async function createMp4(imageDataUrl, audioBlob) {
+            const recorderMimeType = 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+            if (!window.MediaRecorder || !MediaRecorder.isTypeSupported(recorderMimeType)) {
+                throw new Error('Este navegador no puede ensamblar MP4 directamente. Usa Chrome/Edge actualizado.');
+            }
+
+            const image = await dataUrlToImage(imageDataUrl);
+            const canvas = document.createElement('canvas');
+            canvas.width = IMG_SIZE;
+            canvas.height = IMG_SIZE;
+            const context = canvas.getContext('2d');
+            const drawCover = () => context.drawImage(image, 0, 0, IMG_SIZE, IMG_SIZE);
+            drawCover();
+
+            const audio = document.createElement('audio');
+            audio.src = URL.createObjectURL(audioBlob);
+            audio.preload = 'auto';
+            await new Promise((resolve, reject) => {
+                audio.oncanplaythrough = resolve;
+                audio.onerror = () => reject(new Error('El audio generado no pudo reproducirse.'));
+            });
+
+            const audioContext = new AudioContext();
+            const source = audioContext.createMediaElementSource(audio);
+            const destination = audioContext.createMediaStreamDestination();
+            source.connect(destination);
+            source.connect(audioContext.destination);
+            // Repetimos la portada para que el MP4 tenga una pista de video reproducible desde el primer frame.
+            const stream = canvas.captureStream(30);
+            destination.stream.getAudioTracks().forEach(track => stream.addTrack(track));
+            const chunks = [];
+            const recorder = new MediaRecorder(stream, {
+                mimeType: recorderMimeType,
+                videoBitsPerSecond: VIDEO_BITRATE,
+                audioBitsPerSecond: AUDIO_BITRATE
+            });
+            recorder.ondataavailable = event => event.data.size && chunks.push(event.data);
+            const finished = new Promise((resolve, reject) => {
+                // Keep quotes out of the exported data URL used by the generated grid.
+                recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/mp4' }));
+                recorder.onerror = event => reject(event.error || new Error('Falló la codificación MP4.'));
+            });
+
+            recorder.start(250);
+            let drawing = true;
+            const drawFrames = () => {
+                if (!drawing) return;
+                drawCover();
+                requestAnimationFrame(drawFrames);
+            };
+            drawFrames();
+            await audioContext.resume();
+            await audio.play();
+            await new Promise(resolve => { audio.onended = resolve; });
+            drawing = false;
+            recorder.stop();
+            const result = await finished;
+            stream.getTracks().forEach(track => track.stop());
+            source.disconnect();
+            audioContext.close();
+            URL.revokeObjectURL(audio.src);
+            return result;
+        }
+
+        async function startGeneration(textOverride = null, lyricsOverride = null) {
+            saveCurrentKey();
+
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const imgElement = document.getElementById('mainImage');
+            const btnGenerate = document.getElementById('btnGenerate');
+            const btnDownload = document.getElementById('btnDownload');
+            const btnRegenerate = document.getElementById('btnRegenerate');
+
+            const selectedGenre = document.getElementById('genreSelect').value;
+            const genre = selectedGenre === 'custom' ? state.customGenre : selectedGenre;
+            const voice = document.getElementById('voiceSelect').value;
+            const description = (textOverride ?? document.getElementById('descriptionInput').value).trim();
+            const style = document.getElementById('styleSelect').value;
+            const model = document.getElementById('image-model-select')?.value || 'zimage';
+            if (!description) {
+                alert(t('emptyDescription'));
+                document.getElementById('descriptionInput').focus();
+                return;
+            }
+            if (!genre) {
+                handleGenreChange('custom');
+                return;
+            }
+
+            const imagePrompt = `${description}. Visual style: ${style}. Square album cover, evocative, polished, high quality, no text.`;
+
+            loadingOverlay.style.display = 'flex';
+            loadingOverlay.innerHTML = `<div class="spinner"></div><p>${t('generatingCover')}</p>`;
+            btnGenerate.disabled = true;
+            btnDownload.disabled = true;
+            btnRegenerate.disabled = true;
+
+            const seed = Math.floor(Math.random() * 1000000);
+
+            try {
+                const base64Image = await generateImage(imagePrompt, seed);
+                imgElement.src = base64Image;
+                imgElement.alt = `Portada de ${genre} (${model})`;
+                document.getElementById('descriptionInput').value = description;
+                loadingOverlay.innerHTML = `<div class="spinner"></div><p>${t('generatingLyrics')}</p>`;
+                const lyrics = lyricsOverride || await generateLyrics(description, genre, voice);
+                document.getElementById('generatedSongLyrics').value = lyrics;
+                const musicPrompt = state.language === 'en'
+                    ? `${genre} song in English. ${voice} lead singer. Perform these lyrics with an expressive vocal, clear melody, memorable chorus, professional production, and a 30-second clip:\n\n${lyrics}`
+                    : `Canción ${genre} en español. Voz principal ${voice}. Interpreta esta letra con voz expresiva, melodía clara, coro memorable, producción profesional y un clip de 30 segundos:\n\n${lyrics}`;
+                loadingOverlay.innerHTML = `<div class="spinner"></div><p>${t('generatingSong')}</p>`;
+                const audioBlob = await generateMusic(musicPrompt);
+                loadingOverlay.innerHTML = `<div class="spinner"></div><p>${t('assembling')}</p>`;
+                const mp4Blob = await createMp4(base64Image, audioBlob);
+                const filename = `${slugify(description)}.mp4`;
+                generatedSongs.push({ image: base64Image, blob: mp4Blob, filename, description, lyrics, style, genre, language: state.language });
+                updateCounter();
+            } catch (error) {
+                console.error("Error:", error);
+                loadingOverlay.innerHTML = `<p class="error-msg">Error al crear la canción: ${error.message}<br>Verifica tu API Key y el proveedor seleccionado.</p><button class="btn btn-generate" onclick="startGeneration()">Reintentar</button>`;
+                return;
+            } finally {
+                if (!loadingOverlay.querySelector('.error-msg')) {
+                    loadingOverlay.style.display = 'none';
+                }
+                btnGenerate.disabled = false;
+                btnDownload.disabled = false;
+                btnRegenerate.disabled = generatedSongs.length === 0;
+            }
+        }
+
+        function regenerateFromEditor() {
+            const text = document.getElementById('generatedSongLyrics').value.trim();
+            if (!text) {
+                alert(t('writeLyrics'));
+                document.getElementById('generatedSongLyrics').focus();
+                return;
+            }
+            const description = document.getElementById('descriptionInput').value.trim();
+            startGeneration(description || text, text);
+        }
+
+        function downloadSong() {
+            const song = generatedSongs[generatedSongs.length - 1];
+            if (!song) return alert('Genera una canción primero.');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(song.blob);
+            a.download = song.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }
+
+        function updateCounter() {
+            const counter = document.getElementById('songCounter');
+            const btnDelete = document.getElementById('btnDelete');
+            const count = generatedSongs.length;
+            counter.innerText = `${t('saved')}: ${count}`;
+            btnDelete.style.display = count > 0 ? 'flex' : 'none';
+        }
+
+        function deleteCurrentSong() {
+            const imgElement = document.getElementById('mainImage');
+            const songText = document.getElementById('generatedSongLyrics');
+            generatedSongs.pop();
+            if (generatedSongs.length > 0) {
+                const previousSong = generatedSongs[generatedSongs.length - 1];
+                imgElement.src = previousSong.image;
+                songText.value = previousSong.lyrics || '';
+                document.getElementById('descriptionInput').value = previousSong.description || '';
+            } else {
+                imgElement.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+                songText.value = '';
+            }
+            updateCounter();
+        }
+
+        function slugify(value) {
+            return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 80) || 'cancion';
+        }
+
+        async function downloadGrid() {
+            if (generatedSongs.length === 0) {
+                alert('No hay canciones generadas todavía. Genera al menos una canción primero.');
+                return;
+            }
+
+            const songsWithData = await Promise.all(generatedSongs.map(async song => ({
+                ...song,
+                dataUrl: await blobToDataUrl(song.blob)
+            })));
+            const panelsHtml = songsWithData.map((song, i) => `
+                <div class="comic-panel">
+                    <div class="panel-number">${i + 1}</div>
+                    <video id="song-${i}" src="${song.dataUrl}" poster="${song.image}" playsinline preload="metadata"></video>
+                    <button class="play-button" onclick="togglePlay(${i})">${state.language === 'en' ? 'Play' : 'Reproducir'}</button>
+                </div>`).join('\n');
+
+            const gridLanguage = state.language === 'en';
+            const gridHtml = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodIA - ${gridLanguage ? 'Grid' : 'Grilla'}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6278 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .comic-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.4);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        .comic-container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255,255,255,0.95);
+            border-radius: 25px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .comic-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .comic-panel {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            border: 4px solid #2c3e50;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #ddd;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .comic-panel:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        .panel-number {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(45deg, #2c3e50, #4a6278);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            font-weight: 700;
+            z-index: 2;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
+        .comic-panel video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background: #111;
+        }
+        .play-button {
+            position: absolute;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
+            border: 0;
+            border-radius: 999px;
+            padding: 10px 24px;
+            background: rgba(44, 62, 80, 0.92);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+        }
+        .play-button:hover { background: #4CAF50; }
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            z-index: 9999;
+        }
+        .lightbox.open { display: flex; }
+        .lightbox img {
+            max-width: min(900px, 96vw);
+            max-height: 96vh;
+            width: auto;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            cursor: zoom-out;
+        }
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            margin-top: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        @media (max-width: 900px) {
+            .comic-grid { grid-template-columns: repeat(2, 1fr); }
+            .comic-title { font-size: 1.8rem; }
+        }
+        @media (max-width: 500px) {
+            .comic-grid { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .comic-container { box-shadow: none; max-width: 100%; }
+            .comic-panel { break-inside: avoid; }
+            .lightbox { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="comic-title">MelodIA</h1>
+    <div class="comic-container">
+        <div class="comic-grid">
+${panelsHtml}
+        </div>
+    </div>
+    <p class="footer">${gridLanguage ? 'Generated with MelodIA' : 'Generado con MelodIA'} &bull; ${generatedSongs.length} ${gridLanguage ? 'song(s)' : 'canción(es)'}<br><span style="font-size:0.8em;opacity:0.75;">${gridLanguage ? 'Designed with Gemini 3 and Antigravity assistance' : 'Diseñado con Gemini 3 y asistencia de Antigravity'}</span></p>
+    <script>
+        function togglePlay(index) {
+            const video = document.getElementById('song-' + index);
+            const button = video.parentElement.querySelector('.play-button');
+            document.querySelectorAll('.comic-panel video').forEach(other => {
+                if (other !== video) {
+                    other.pause();
+                    other.currentTime = 0;
+                    other.parentElement.querySelector('.play-button').textContent = ${gridLanguage ? "'Play'" : "'Reproducir'"};
+                }
+            });
+            if (video.paused) {
+                video.muted = false;
+                video.play().then(() => {
+                    button.textContent = ${gridLanguage ? "'Pause'" : "'Pausa'"};
+                }).catch(error => {
+                    console.error('No se pudo reproducir la canción:', error);
+                    button.textContent = ${gridLanguage ? "'Play'" : "'Reproducir'"};
+                    alert('No se pudo reproducir este video. Comprueba que el archivo MP4 sea válido.');
+                });
+            } else {
+                video.pause();
+                    button.textContent = ${gridLanguage ? "'Play'" : "'Reproducir'"};
+            }
+        }
+        document.querySelectorAll('.comic-panel video').forEach(video => {
+            video.addEventListener('ended', () => {
+                video.parentElement.querySelector('.play-button').textContent = 'Play';
+            });
+        });
+    <\/script>
+</body>
+</html>`;
+
+            const blob = new Blob([gridHtml], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `grilla_blueprints_${Date.now()}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
